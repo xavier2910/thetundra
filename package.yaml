@@ -1,5 +1,5 @@
 name:                thetundra
-version:             0.1.0.0
+version:             0.1.0
 github:              "xavier2910/thetundra"
 license:             BSD3
 author:              "Xavier Distelzweig"
@@ -21,6 +21,7 @@ description:         Please see the README on GitHub at <https://github.com/xavi
 
 dependencies:
 - base >= 4.7 && < 5
+- containers
 
 ghc-options:
 - -Wall

@@ -9,7 +9,7 @@ data Location = Location { description :: String
                          , connections :: Map.Map Direction Location }
 
 playGame :: IO ()
-playGame = do putStrLn "The Tundra v1.0.0"
+playGame = do putStrLn "The Tundra v0.1.0"
 
 
               
