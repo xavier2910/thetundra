@@ -38,7 +38,7 @@ library:
   source-dirs: src
 
 executables:
-  thetundra-exe:
+  thetundra:
     main:                Main.hs
     source-dirs:         app
     ghc-options:

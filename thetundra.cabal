@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 69f97ecd274bc0f24422ee1630a2f96181c6de0082dea8e5d1d35f0dbbfb46c9
+-- hash: 40dd547b53046a43fe81ae7dd32cad62602b6536f1f2953460ff7c4d1c09f6fb
 
 name:           thetundra
 version:        0.1.0
@@ -29,7 +29,9 @@ source-repository head
 
 library
   exposed-modules:
-      Lib
+      Engine
+      Player
+      Story
   other-modules:
       Paths_thetundra
   hs-source-dirs:
@@ -40,7 +42,7 @@ library
     , containers
   default-language: Haskell2010
 
-executable thetundra-exe
+executable thetundra
   main-is: Main.hs
   other-modules:
       Paths_thetundra
