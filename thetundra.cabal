@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 5f1301cf0cea785d98c1fb2c8eeadca8efe17414b49c9fc54e05657329a1554d
+-- hash: 602c951f48720185f047f7778e9266cfef6e5672946412f92f23a4d67bc3998e
 
 name:           thetundra
 version:        0.1.0
@@ -16,7 +16,7 @@ bug-reports:    https://github.com/xavier2910/thetundra/issues
 author:         Xavier Distelzweig
 maintainer:     x.distelzweig@gmail.com
 copyright:      none
-license:        GPL3
+license:        GPL-3
 license-file:   LICENSE
 build-type:     Simple
 extra-source-files:
