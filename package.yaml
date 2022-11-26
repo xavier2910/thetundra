@@ -1,7 +1,7 @@
 name:                thetundra
 version:             0.1.0
 github:              "xavier2910/thetundra"
-license:             BSD3
+license:             GPL3
 author:              "Xavier Distelzweig"
 maintainer:          "x.distelzweig@gmail.com"
 copyright:           "none"

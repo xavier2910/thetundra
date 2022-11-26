@@ -1,15 +1,18 @@
-module Engine ( Location
-              , Vehicle
-              , Furniture
-              , NPC
-              , Role(defaultInventory)
+module Engine ( Location ( lDescription, isPlayerAt, inhabitants )
+              , Inhabitants
+              , Vehicle ( vDescription, passengers )
+              , Furniture ( fDescription )
+              , NPC ( name, role, nDescription, nInventory )
+              , Role ( defaultInventory )
               , Item
-              , Inventory) where
+              , Inventory) where  
 
 
-data Location = Location { lDescription :: String
-                         , isPlayerHere :: Bool
-                         , children :: Inventory } deriving(Show, Eq)
+data Location r = Location { lDescription :: String
+                           , isPlayerAt :: Bool
+                           , inhabitants :: Inhabitants r } deriving(Show, Eq)
+
+type Inhabitants r = ([Furniture], [Vehicle], [NPC r], Inventory)
 
 data Vehicle = Vehicle { vDescription :: String 
                        , passengers :: Inventory } deriving(Show, Eq)
