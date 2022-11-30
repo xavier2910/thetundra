@@ -1,4 +1,4 @@
-module Engine ( ) where 
+module Engine where 
 
 import qualified Data.Map as M
 
