@@ -1,10 +1,17 @@
 module Player
-    ( playGame
+    ( begin
     ) where
 
+import Story ( start )
+import Engine ( Location, Tree, Direction )
 
-playGame :: IO ()
-playGame = do putStrLn "The Tundra v0.1.0"
+begin :: IO ()
+begin = do putStrLn "The Tundra v0.1.0"
+           playGame start
+
+playGame :: Tree Direction Location -> IO ()
+playGame st = putStrLn "todo"
+              
 
 
               
