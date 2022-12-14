@@ -7,5 +7,7 @@ and this project adheres to the
 [Haskell Package Versioning Policy](https://pvp.haskell.org/).
 
 ## Unreleased
+initial release:
+- can move in cardinal directions
 
 ## 0.1.0.0 - YYYY-MM-DD
