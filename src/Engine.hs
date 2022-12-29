@@ -12,7 +12,6 @@ module Engine ( Direction(..)
 
               , HasDescription(..)
 
-
               , children
               , value) where 
 
@@ -28,7 +27,7 @@ data Tree k v = Leaf v
 data Location = Location { lDescription :: String
                          , objects :: [Object] }
 
-newtype Object = Object {oDescription :: String}
+newtype Object = Object { oDescription :: String }
 
 
 class HasDescription d where
@@ -54,7 +53,8 @@ object = Object
 
 
 instance HasDescription Location where
-       description = lDescription
+       description l = lDescription l
+                    ++ concatMap ((' ':) . description) (objects l)
 
 instance HasDescription Object where
        description = oDescription

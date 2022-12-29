@@ -1,9 +1,10 @@
 module Story (start) where
 
 import Engine
-    ( Location, emptyLocation
+    ( Location, emptyLocation, location
     , Tree(Node)
-    , Direction(N, W, E, S) )
+    , Direction(N, W, E, S)
+    , object )
 import qualified Data.Map as M
 
 start :: Tree Direction Location
@@ -16,8 +17,10 @@ start = Node (emptyLocation $ "You are looking into the mouth of a dark cave in 
                          , (S, forestNorthEdge) ])
 
 incave :: Tree Direction Location
-incave = Node (emptyLocation $ "You are standing in a very dark cave. You can barely make out\n"
-                            ++ "a sloping upward passage to the west.")
+incave = Node (location ("You are standing in a very dark cave. You can barely make out\n"
+                      ++ "a sloping upward passage to the west.")
+                        [ object "A shiny penny sits on the floor."
+                        , object "Nearby is a small chair, about three inches tall." ])
               (M.fromList [ (W, start) ])
 
 emptiness :: Tree Direction Location
