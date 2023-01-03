@@ -21,6 +21,8 @@ module Engine
     , value ) where
 
 import qualified Data.Map as M
+import Data.Char 
+    ( toUpper )
 
 data Direction = N | S | E | W | NE | NW | SE | SW deriving (Show, Read, Eq, Ord)
 
@@ -45,6 +47,8 @@ data Relation
     | OnButShow Thing
     | In Thing
     | InButShow Thing
+    -- | a Verb value specifies the verb to be used with the relations, eg. 'sits'
+    | Verb String
 
 type Thing = String
 
@@ -78,13 +82,45 @@ isOnOrIn (On _) = True
 isOnOrIn (In _) = True
 isOnOrIn _ = False
 
+isOnOrInIndescriminate :: Relation -> Bool
+isOnOrInIndescriminate (On _) = True
+isOnOrInIndescriminate (OnButShow _) = True
+isOnOrInIndescriminate (In _) = True
+isOnOrInIndescriminate (InButShow _) = True
+isOnOrInIndescriminate _ = False
+
+isVerb :: Relation -> Bool
+isVerb (Verb _) = True
+isVerb _ = False
+
+relationToString :: Relation -> String
+relationToString (On str) = "on " ++ str 
+relationToString (OnButShow str) = "on " ++ str
+relationToString (In str) = "in " ++ str
+relationToString (InButShow str) = "in " ++ str
+relationToString (Verb str) = str
+-- this is here in case I add a relation & forget to add it to this function
+relationToString _ = "<error: unrecognized relation - this is a bug>"
+
 
 instance HasDescription Location where
     description l =
         lDescription l
-            ++ (concatMap ((' ' :) . description) . filter notInOrOnSomething) (objects l)
+            ++ 
+                ( concatMap ((' ' :) . (++ "."). capitalizeFirst . description) 
+                . filter notInOrOnSomething ) 
+            (objects l)
+
       where
         notInOrOnSomething = not . any isOnOrIn . relations
 
+        capitalizeFirst (c:str) = toUpper c :str
+        capitalizeFirst [] = []
+
 instance HasDescription Object where
-    description = oDescription
+    description o = 
+        oDescription o
+            ++ if not . any isOnOrInIndescriminate $ relations o
+                then ""
+                else ((' ':) . relationToString . head . filter isVerb) (relations o)
+                    ++ concatMap ((' ':) . relationToString) (filter isOnOrInIndescriminate $ relations o)
