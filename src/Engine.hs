@@ -1,37 +1,56 @@
-module Engine ( Direction(..)
+module Engine 
+    ( Direction (..)
 
-              , Tree(Leaf, Node)
+    , Tree (Leaf, Node)
 
-              , Location
-              , objects
-              , emptyLocation
-              , location
+    , Location
+    , objects
+    , emptyLocation
+    , location
 
-              , Object
-              , object
+    , Object
+    , object
+    , name
 
-              , HasDescription(..)
+    , Relation (..)
 
-              , children
-              , value) where 
+    , HasDescription (..)
 
-import qualified Data.Map as M
+    , children
 
+    , value ) where
 
-data Direction = N | S | E | W | NE | NW | SE | SW deriving(Show, Read, Eq, Ord)
+import Data.Map qualified as M
+
+data Direction = N | S | E | W | NE | NW | SE | SW deriving (Show, Read, Eq, Ord)
 
 -- | Non-binary tree. Never empty. Uses a Data.Map.Map to keep track of its children.
-data Tree k v = Leaf v 
-              | Node v (M.Map k (Tree k v))
+data Tree k v
+    = Leaf v
+    | Node v (M.Map k (Tree k v))
 
-data Location = Location { lDescription :: String
-                         , objects :: [Object] }
+data Location = Location
+    { lDescription :: String
+    , objects :: [Object]
+    }
 
-newtype Object = Object { oDescription :: String }
+data Object = Object
+    { oName :: String
+    , relations :: [Relation]
+    , oDescription :: String
+    }
+
+data Relation
+    = On Thing
+    | OnButShow Thing
+    | In Thing
+    | InButShow Thing
+
+type Thing = String
 
 
 class HasDescription d where
-       description ::  d -> String
+    description :: d -> String
 
 
 children :: Tree k v -> Maybe (M.Map k (Tree k v))
@@ -43,19 +62,29 @@ value (Node x _) = x
 value (Leaf x) = x
 
 emptyLocation :: String -> Location
-emptyLocation = flip Location [] 
+emptyLocation = flip Location []
 
 location :: String -> [Object] -> Location
 location = Location
 
-object :: String -> Object
+object :: String -> [Relation] -> String -> Object
 object = Object
+
+name :: Object -> String
+name = oName
+
+isOnOrIn :: Relation -> Bool
+isOnOrIn (On _) = True
+isOnOrIn (In _) = True
+isOnOrIn _ = False
 
 
 instance HasDescription Location where
-       description l = lDescription l
-                    ++ concatMap ((' ':) . description) (objects l)
+    description l =
+        lDescription l
+            ++ (concatMap ((' ' :) . description) . filter notInOrOnSomething) (objects l)
+      where
+        notInOrOnSomething = not . any isOnOrIn . relations
 
 instance HasDescription Object where
-       description = oDescription
-
+    description = oDescription
