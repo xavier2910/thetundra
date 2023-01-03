@@ -20,7 +20,7 @@ module Engine
 
     , value ) where
 
-import Data.Map qualified as M
+import qualified Data.Map as M
 
 data Direction = N | S | E | W | NE | NW | SE | SW deriving (Show, Read, Eq, Ord)
 
