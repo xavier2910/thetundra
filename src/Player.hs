@@ -13,7 +13,7 @@ import Story
 
 import Data.Char 
     ( toUpper )
-import Data.Map qualified as M
+import qualified Data.Map as M
 import System.IO 
     ( hFlush
     , stdout )
