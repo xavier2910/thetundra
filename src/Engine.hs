@@ -18,7 +18,11 @@ module Engine
 
     , children
 
-    , value ) where
+    , value 
+
+    , wrapIntoLines
+    ) 
+  where
 
 import qualified Data.Map as M
 import Data.Char 
@@ -42,6 +46,8 @@ data Object = Object
     , oDescription :: String
     }
 
+-- | used to construct the description of
+-- an Object    
 data Relation
     = On Thing
     | OnButShow Thing
@@ -102,6 +108,21 @@ relationToString (Verb str) = str
 -- this is here in case I add a relation & forget to add it to this function
 relationToString _ = "<error: unrecognized relation - this is a bug>"
 
+-- | takes a line length (in characters) and
+-- wraps the input string at that length
+wrapIntoLines :: Int -> String -> String
+wrapIntoLines l str = if length str > l && l > 0
+    then thisLine 
+        ++ "\n" 
+        ++ wrapIntoLines l 
+            (drop 
+                -- compensate for the '-' added to thisLine if the word was too long
+                (length thisLine - if ' ' `elem` take l str then 0 else 1) 
+                str)
+    else str
+  where thisLine = if ' ' `elem` take l str 
+        then reverse $ dropWhile (/= ' ') (reverse $ take l str)
+        else take l str ++ "-"
 
 instance HasDescription Location where
     description l =

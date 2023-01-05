@@ -22,7 +22,7 @@ incave :: Tree Direction Location
 incave = Node (location ("You are standing in a very dark cave. You can barely make out "
                       ++ "a sloping upward passage to the west.")
                         [ object "penny" [OnButShow "the ground", Verb "glints"] "a shiny penny"
-                        , object "chair" [InButShow "a dark corner of the cave", Verb "crouches"] "a small chair, about three inches tall" ])
+                        , object "chair" [InButShow "a dark corner of the cave", Verb "crouches"] "a small chair about three inches tall" ])
               (M.fromList [ (W, start) ])
 
 emptiness :: Tree Direction Location

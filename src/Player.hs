@@ -1,13 +1,13 @@
 module Player 
     ( begin ) where
 
-import Engine 
+import Engine
     ( Direction
     , Location
     , Tree
     , children
     , description
-    , value )
+    , value, wrapIntoLines )
 import Story 
     ( start )
 
@@ -18,12 +18,17 @@ import System.IO
     ( hFlush
     , stdout )
 
+
+lineLength :: Int
+lineLength = 75
+
+
 begin :: IO ()
 begin = do
     putStrLn "The Tundra v0.1.0"
     let msg = description $ value start
 
-    putStrLn $ "\n" ++ msg ++ "\n"
+    putStrLn . wrapIntoLines lineLength $ "\n" ++ msg ++ "\n"
     playGame start
 
 playGame :: Tree Direction Location -> IO ()
@@ -40,7 +45,7 @@ playGame st = do
 
                 Just tree -> do
                     let msg = description $ value tree
-                    putStrLn $ "\n" ++ msg ++ "\n"
+                    putStrLn . wrapIntoLines lineLength $ "\n" ++ msg ++ "\n"
                     playGame tree
 
                 Nothing -> do
