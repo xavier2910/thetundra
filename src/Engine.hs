@@ -2,6 +2,8 @@ module Engine
     ( Direction (..)
 
     , Tree (Leaf, Node)
+    , children
+    , value 
 
     , Location
     , objects
@@ -15,10 +17,6 @@ module Engine
     , Relation (..)
 
     , HasDescription (..)
-
-    , children
-
-    , value 
 
     , wrapIntoLines
     ) 
@@ -41,24 +39,48 @@ data Location = Location
     }
 
 data Object = Object
+    -- | ideally should be unique, but can be
+    -- displayed, so be careful
     { oName :: String
     , relations :: [Relation]
+    -- | generally, this should be a noun phrase
+    -- for compatibility with the sentence builder
+    -- in `Object`'s `HasDescription` instance
     , oDescription :: String
     }
 
 -- | used to construct the description of
 -- an Object    
 data Relation
-    = On Thing
-    | OnButShow Thing
-    | In Thing
-    | InButShow Thing
-    -- | a Verb value specifies the verb to be used with the relations, eg. 'sits'
-    | Verb String
+    -- | represents when an `Object` is strictly 'on'
+    -- something and should only be visible on closer
+    -- examination.
+    = OnStrict Thing
+    -- | represents when an `Object` should be described
+    -- as 'on' something but strictly isn't 'on' that
+    -- thing
+    | OnLoose Thing
+    -- | represents when an `Object` is strictly 'in'
+    -- something and should only be visible on closer
+    -- examination.
+    | InStrict Thing
+    -- | represents when an `Object` should be described
+    -- as 'in' something but strictly isn't 'in' that
+    -- thing
+    | InLoose Thing
+    -- | a VerbPhrase value specifies the verb phrase 
+    -- to be used with the rest of the relations when
+    -- constructing descriptions, eg. 'sits disquietingly' 
+    | VerbPhrase String
 
+-- | semantic type synonym 
+-- a `Thing` value shuold equal the name
+-- of an `Object` in the current context
 type Thing = String
 
 
+-- | Honestly, who wants to remember `oDescription`
+-- and `lDescription` etc?
 class HasDescription d where
     description :: d -> String
 
@@ -83,35 +105,39 @@ object = Object
 name :: Object -> String
 name = oName
 
-isOnOrIn :: Relation -> Bool
-isOnOrIn (On _) = True
-isOnOrIn (In _) = True
-isOnOrIn _ = False
+isStrictOnOrIn :: Relation -> Bool
+isStrictOnOrIn (OnStrict _) = True
+isStrictOnOrIn (InStrict _) = True
+isStrictOnOrIn _ = False
 
-isOnOrInIndescriminate :: Relation -> Bool
-isOnOrInIndescriminate (On _) = True
-isOnOrInIndescriminate (OnButShow _) = True
-isOnOrInIndescriminate (In _) = True
-isOnOrInIndescriminate (InButShow _) = True
-isOnOrInIndescriminate _ = False
+-- | determines whether a `Relation` is an
+-- on or in, ignoring whether it should be shown
+-- outside the `Thing`'s context
+isLooseOrStrictOnOrIn :: Relation -> Bool
+isLooseOrStrictOnOrIn (OnStrict _) = True
+isLooseOrStrictOnOrIn (OnLoose _) = True
+isLooseOrStrictOnOrIn (InStrict _) = True
+isLooseOrStrictOnOrIn (InLoose _) = True
+isLooseOrStrictOnOrIn _ = False
 
-isVerb :: Relation -> Bool
-isVerb (Verb _) = True
-isVerb _ = False
+isVerbPhrase :: Relation -> Bool
+isVerbPhrase (VerbPhrase _) = True
+isVerbPhrase _ = False
 
 relationToString :: Relation -> String
-relationToString (On str) = "on " ++ str 
-relationToString (OnButShow str) = "on " ++ str
-relationToString (In str) = "in " ++ str
-relationToString (InButShow str) = "in " ++ str
-relationToString (Verb str) = str
+relationToString (OnStrict str) = "on " ++ str 
+relationToString (OnLoose str) = "on " ++ str
+relationToString (InStrict str) = "in " ++ str
+relationToString (InLoose str) = "in " ++ str
+relationToString (VerbPhrase str) = str
 -- this is here in case I add a relation & forget to add it to this function
 relationToString _ = "<error: unrecognized relation - this is a bug>"
 
 -- | takes a line length (in characters) and
 -- wraps the input string at that length
 wrapIntoLines :: Int -> String -> String
-wrapIntoLines l str = if length str > l && l > 0
+wrapIntoLines l str = if length str > l -- end case if the line is too short 
+                      && l > 0 -- and idiot-proof it
     then thisLine 
         ++ "\n" 
         ++ wrapIntoLines l 
@@ -120,28 +146,54 @@ wrapIntoLines l str = if length str > l && l > 0
                 (length thisLine - if ' ' `elem` take l str then 0 else 1) 
                 str)
     else str
-  where thisLine = if ' ' `elem` take l str 
+
+  where thisLine = if ' ' `elem` take l str -- must be careful we don't try to
+                                            -- split a line on ' ' that has no ' '
+        -- if it has a space, take off the end of
+        -- the line beyond that space
         then reverse $ dropWhile (/= ' ') (reverse $ take l str)
+        -- otherwise, just lop the end off and add
+        -- a '-'
         else take l str ++ "-"
 
 instance HasDescription Location where
     description l =
+        -- get the place description...
         lDescription l
-            ++ 
-                ( concatMap ((' ' :) . (++ "."). capitalizeFirst . description) 
+            -- then describe the objects there:
+                -- format them nicely into sentences & stitch them together
+            ++  ( concatMap ((' ' :) . (++ "."). capitalizeFirst . description) 
+                -- but first we have to make sure they
+                -- shouldn't be hidden
                 . filter notInOrOnSomething ) 
-            (objects l)
+                    (objects l)
 
       where
-        notInOrOnSomething = not . any isOnOrIn . relations
+        notInOrOnSomething = not . any isStrictOnOrIn . relations
 
         capitalizeFirst (c:str) = toUpper c :str
         capitalizeFirst [] = []
 
 instance HasDescription Object where
     description o = 
+        -- take a noun phrase provided...
         oDescription o
-            ++ if not . any isOnOrInIndescriminate $ relations o
-                then ""
-                else ((' ':) . relationToString . head . filter isVerb) (relations o)
-                    ++ concatMap ((' ':) . relationToString) (filter isOnOrInIndescriminate $ relations o)
+            -- and completes the sentence based on the relations
+            -- present (if any)
+            ++ if not . any isLooseOrStrictOnOrIn $ relations o
+                then "" -- if there aren't any, we give up (it's probably
+                        -- in the player's inventory, and there isn't
+                        -- much to say. Just imagine you query your inven-
+                        -- tory and the computer solemnly informs you that your
+                        -- waterbottle (in your pack) is sitting on a desk???)
+
+                    -- if, on the other hand, there are relations, we pretty
+                    -- them up:
+                    -- first find the (first) verb (no compound predicates, sorry),
+                    -- and put a space in front of it
+                else ((' ':) . relationToString . head . filter isVerbPhrase) (relations o)
+                    -- and then (since the hidden cases were taken care of by
+                    -- `Location`'s `description` implementation) we get all
+                    -- the on's or in's, space them out, and stitch them
+                    -- together
+                    ++ concatMap ((' ':) . relationToString) (filter isLooseOrStrictOnOrIn $ relations o)

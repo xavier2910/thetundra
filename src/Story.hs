@@ -5,7 +5,7 @@ import Engine
     , Tree(Node)
     , Direction(N, W, E, S)
     , object
-    , Relation(OnButShow, InButShow, Verb) )
+    , Relation(OnLoose, InLoose, VerbPhrase) )
 
 import qualified Data.Map as M
 
@@ -21,8 +21,8 @@ start = Node (emptyLocation $ "You are looking into the mouth of a dark cave in 
 incave :: Tree Direction Location
 incave = Node (location ("You are standing in a very dark cave. You can barely make out "
                       ++ "a sloping upward passage to the west.")
-                        [ object "penny" [OnButShow "the ground", Verb "glints"] "a shiny penny"
-                        , object "chair" [InButShow "a dark corner of the cave", Verb "crouches"] "a small chair about three inches tall" ])
+                        [ object "penny" [OnLoose "the ground", VerbPhrase "glints"] "a shiny penny"
+                        , object "chair" [InLoose "a dark corner of the cave", VerbPhrase "crouches"] "a small chair about three inches tall" ])
               (M.fromList [ (W, start) ])
 
 emptiness :: Tree Direction Location
