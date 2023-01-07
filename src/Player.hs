@@ -1,5 +1,6 @@
 module Player 
-    ( begin ) where
+    ( begin ) 
+  where
 
 import Engine
     ( Direction
