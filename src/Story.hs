@@ -1,4 +1,6 @@
-module Story (start) where
+module Story 
+    ( start ) 
+  where
 
 import Engine
     ( Location, emptyLocation, location
@@ -38,3 +40,4 @@ forestNorthEdge :: Tree Direction Location
 forestNorthEdge = Node (emptyLocation $ "You are standing at the north edge of a huge pine forest "
                                      ++ "stretching east and west as far as you can see.")
                        (M.fromList [ (N, start) ])
+                       
