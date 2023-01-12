@@ -18,13 +18,16 @@ module Engine
 
     , HasDescription (..)
 
+    , GameState
+
     , wrapIntoLines
     ) 
   where
 
 import qualified Data.Map as M
 import Data.Char 
-    ( toUpper )
+    ( toUpper 
+    )
 
 data Direction = N | S | E | W | NE | NW | SE | SW deriving (Show, Read, Eq, Ord)
 
@@ -77,6 +80,8 @@ data Relation
 -- a `Thing` value shuold equal the name
 -- of an `Object` in the current context
 type Thing = String
+
+type GameState = Tree Direction Location
 
 
 -- | Honestly, who wants to remember `oDescription`
@@ -140,7 +145,7 @@ wrapIntoLines l str = if length str > l -- end case if the line is too short
                       && l > 0 -- and idiot-proof it
     then thisLine 
         ++ "\n" 
-        ++ wrapIntoLines l 
+        ++ wrapIntoLines l -- take this line, a newline, and the rest, wrapped
             (drop 
                 -- compensate for the '-' added to thisLine if the word was too long
                 (length thisLine - if ' ' `elem` take l str then 0 else 1) 
