@@ -7,7 +7,11 @@ and this project adheres to the
 [Haskell Package Versioning Policy](https://pvp.haskell.org/).
 
 ## Unreleased
-initial release:
-- can move in cardinal directions
 
-## 0.1.0.0 - YYYY-MM-DD
+
+## 0.1.0.0 - 2023-01-12
+### initial release:
+- Supports commands look, go, & help.
+- Contains five locations (pathetic, I know).
+- Auto-wraps displayed messages.
+- And not much else. But hey, it works!

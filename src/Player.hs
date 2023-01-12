@@ -1,62 +1,71 @@
 module Player 
-    ( begin ) 
+    ( begin 
+    ) 
   where
 
-import Engine
-    ( Direction
-    , Location
-    , Tree
-    , children
-    , description
-    , value, wrapIntoLines )
-import Story 
-    ( start )
 
-import Data.Char 
-    ( toUpper )
-import qualified Data.Map as M
+import Engine
+    ( description
+    , value
+    , wrapIntoLines
+    , GameState
+    )
+
+import Engine.CommandProcessor
+    ( stringToCommand
+    , executeCommand
+    )
+
+import Story 
+    ( start 
+    )
+
 import System.IO 
     ( hFlush
-    , stdout )
+    , stdout 
+    )
+
+import Control.Monad
+    ( when
+    )
+
+import Control.Monad.State 
+    ( runState
+    )
 
 
+-- | global print line length limit.
 lineLength :: Int
 lineLength = 75
 
 
 begin :: IO ()
 begin = do
-    putStrLn "The Tundra v0.1.0"
+    putStrLn "The Tundra v0.1.0\n by Xavier\n\nType a command, or type '?' for help.\nBlank line or 'q' exits."
+    putStrLn "I guess you could type Ctrl + C, too, but that's bad form.\nIt'll give you an ugly uncaught exception message."
+    putStrLn "Please note commands are not case-sensitive.\n"
     let msg = description $ value start
 
     putStrLn . wrapIntoLines lineLength $ "\n" ++ msg ++ "\n"
-    playGame start
+    playGameCmd start
 
-playGame :: Tree Direction Location -> IO ()
-playGame st = do
+
+playGameCmd :: GameState -> IO ()
+playGameCmd st = do
     putStr "> "
     hFlush stdout
     command <- getLine
-
-
-    case reads $ map toUpper command :: [(Direction, String)] of
-
-        [(dir, _)] -> case children st of
-            Just chs -> case M.lookup dir chs of
-
-                Just tree -> do
-                    let msg = description $ value tree
+    
+    when ((not . null) command && head command /= 'q')
+        (do
+            case stringToCommand command of 
+                Just cmd -> do
+                    let (msg, nst) = runState (executeCommand cmd) st
                     putStrLn . wrapIntoLines lineLength $ "\n" ++ msg ++ "\n"
-                    playGame tree
+                    playGameCmd nst
 
                 Nothing -> do
-                    putStrLn "\nYou can't go that way :(\n"
-                    playGame st
+                    putStrLn "\nbad command :(\n"
+                    playGameCmd st
+        )
 
-            Nothing -> putStrLn "GAME OVER :(" -- todo: dead end case should be caught before
-                                               --       this command cycle, making this code
-                                               --       unreachable
-            
-        _ -> do
-            putStrLn "\nBad command :(\n"
-            playGame st

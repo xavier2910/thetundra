@@ -1,13 +1,15 @@
 module Story 
-    ( start ) 
+    ( start 
+    ) 
   where
 
 import Engine
     ( Location, emptyLocation, location
-    , Tree(Node)
-    , Direction(N, W, E, S)
+    , Tree (Node)
+    , Direction (N, W, E, S, NE, SE, SW, NW)
     , object
-    , Relation(OnLoose, InLoose, VerbPhrase) )
+    , Relation (OnLoose, InLoose, VerbPhrase)
+    )
 
 import qualified Data.Map as M
 
@@ -29,15 +31,19 @@ incave = Node (location ("You are standing in a very dark cave. You can barely m
 
 emptiness :: Tree Direction Location
 emptiness = Node (emptyLocation "You are surrounded by nondescript, empty tundra")
-                 (M.fromList [ (E, start) ])
+                 (M.fromList [ (E, start)
+                             , (NE, signpost)
+                             , (SE, forestNorthEdge) ])
 
 signpost :: Tree Direction Location
 signpost = Node (emptyLocation $ "In the middle of the desolate tundra stands a battered old signpost. "
                               ++ "You can see nothing else all the way to the horizon.")
-                (M.fromList [ (S, start) ])
+                (M.fromList [ (S, start)
+                            , (SW, emptiness) ])
 
 forestNorthEdge :: Tree Direction Location
 forestNorthEdge = Node (emptyLocation $ "You are standing at the north edge of a huge pine forest "
                                      ++ "stretching east and west as far as you can see.")
-                       (M.fromList [ (N, start) ])
+                       (M.fromList [ (N, start)
+                                   , (NW, emptiness) ])
                        
