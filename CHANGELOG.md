@@ -9,7 +9,7 @@ and this project adheres to the
 ## Unreleased
 
 
-## 0.1.0.0 - 2023-01-12
+## 0.1.0 - 2023-01-12
 ### initial release:
 - Supports commands look, go, & help.
 - Contains five locations (pathetic, I know).
