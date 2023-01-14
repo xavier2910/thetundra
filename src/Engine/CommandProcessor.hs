@@ -2,6 +2,7 @@ module Engine.CommandProcessor
     ( stringToCommand
     , executeCommand
     , readM
+    , CommandType (..)
     ) 
   where
 
@@ -11,7 +12,7 @@ import Engine
     , Direction (..)
     , children
     , HasDescription (description)
-    , value
+    , value, Location (objects), name, Object (commands)
     )
 
 import Control.Monad.Except
@@ -128,14 +129,18 @@ move dir st = do
 executeCommand :: Command -> State GameState String
 
 executeCommand (MoveCommand Go args) = do
-    here <- get
-    let destination = destinationFrom here
-    case destination of
-        Just d -> do
-            put d
-            return $ (description . value) d
-        Nothing -> 
-            return $ head args ++ " is not a direction you can go :("
+    if (not . null) args then 
+        (do
+            here <- get
+            let destination = destinationFrom here
+            case destination of
+                Just d -> do
+                    put d
+                    return $ (description . value) d
+                Nothing -> 
+                    return $ head args ++ " is not a direction you can go :("
+        )
+        else return "In what direction?"
   where
     destinationFrom place = do
         dir <- parseDirection $ head args
@@ -144,7 +149,25 @@ executeCommand (MoveCommand Go args) = do
 executeCommand (MoveCommand cmd _) = 
     return $ "<error: " ++ show cmd ++ " is not a movement command. this is a bug>"
 
-executeCommand (ObjectCommand typ args) = return "" -- todo
+executeCommand (ObjectCommand cmd args) = do
+    if (not . null) args then
+        (do
+            here <- get
+            let loc = value here
+                objs = objects loc
+                found = [obj | obj <- objs, name obj == head args]
+            if (not . null) found then
+                (do
+                    let xDescription = M.lookup cmd (commands $ head found)
+                            `catchError` (\_ -> return "")
+                        (Just xdesc) = xDescription
+                    return xdesc
+                )
+                else return $ "What " ++ head args ++ "?"
+        )
+        else return "what object?"
+
+
 executeCommand (PlayerCommand _ _) = return "unfortunately, player commands arent supported yet :("
 executeCommand (OtherCommand Look _) = gets (description . value)
 executeCommand (OtherCommand Wait _) = return "You do nothing in anticipation of what might happen...."
@@ -157,7 +180,7 @@ executeCommand (OtherCommand Help _) = return $
     ++ "look (shortcut 'l')\n\tDisplay the surrounding environment. helpful if theres a bunch of "
     ++ "clutter in your terminal.\n\n"
     ++ "again (shortcut 'g')\n\tDo whatever you just did, again.\n\n"
-    ++ "inventory (shortcut 'i')\n\take inventory. Currently not implemented :(\n\n"
+    ++ "inventory (shortcut 'i')\n\tTake inventory. Currently not implemented :(\n\n"
     ++ "examine [thing] (shortcut 'x')\n\tTake a more detailed look at [thing]. "
     ++ "Ideally, [thing] should be the one-word name of an object in your immediate "
     ++ "environment. Hopefully i can get some nice support for this up; this is an "
