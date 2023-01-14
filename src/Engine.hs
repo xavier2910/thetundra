@@ -135,31 +135,45 @@ relationToString (OnLoose str) = "on " ++ str
 relationToString (InStrict str) = "in " ++ str
 relationToString (InLoose str) = "in " ++ str
 relationToString (VerbPhrase str) = str
--- this is here in case I add a relation & forget to add it to this function
-relationToString _ = "<error: unrecognized relation - this is a bug>"
 
 -- | takes a line length (in characters) and
 -- wraps the input string at that length
 wrapIntoLines :: Int -> String -> String
 wrapIntoLines l str = if length str > l -- end case if the line is too short 
                       && l > 0 -- and idiot-proof it
+    -- take this line, a newline, and the rest, wrapped
     then thisLine 
         ++ "\n" 
-        ++ wrapIntoLines l -- take this line, a newline, and the rest, wrapped
-            (drop 
-                -- compensate for the '-' added to thisLine if the word was too long
-                (length thisLine - if ' ' `elem` take l str then 0 else 1) 
-                str)
+        ++ wrapIntoLines l (drop dropLength str)
     else str
 
-  where thisLine = if ' ' `elem` take l str -- must be careful we don't try to
-                                            -- split a line on ' ' that has no ' '
-        -- if it has a space, take off the end of
-        -- the line beyond that space
-        then reverse $ dropWhile (/= ' ') (reverse $ take l str)
-        -- otherwise, just lop the end off and add
-        -- a '-'
-        else take l str ++ "-"
+  where 
+    thisLine
+        -- if we have a newline in the next l characters,
+        -- 'thisLine' should only go up to that newline
+        | '\n' `elem` take_l_str = takeWhile (/= '\n') str
+        -- if there's a space in this line, take the last
+        -- space before the character limit.
+        -- we only worry about space-breaking if there
+        -- isn't already a newline to do the work for us
+        | ' ' `elem` take_l_str = reverse $ dropWhile (/= ' ') (reverse take_l_str)
+        -- if there's no space, we just stick a dash
+        -- on it
+        | otherwise = take_l_str ++ "-"
+        
+    take_l_str = take l str
+
+    dropLength
+        -- if we've a newline, cut it off, it was
+        -- left out of 'thisLine'
+        | '\n' `elem` take_l_str = length thisLine + 1
+        -- if we have a space to split on, there's nothing
+        -- to worry about
+        | ' ' `elem` take_l_str = length thisLine
+        -- if there wasn't a space, we need to make
+        -- sure we don't cut of the \'-\' at the end
+        -- of the line
+        | otherwise = length thisLine - 1
 
 instance HasDescription Location where
     description l =
