@@ -1,0 +1,60 @@
+name: "Build 'n' test 'n' lint"
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build-and-test-linux:
+    name: Build and Test -- Linux
+    runs-on: ubuntu-latest # or macOS-latest, or windows-latest
+    steps:
+      - name: Checkout 
+        uses: actions/checkout@v3
+        
+      - name: Setup stack
+        uses: haskell/actions/setup@v2
+        with:
+          ghc-version: '9.2.4' # Exact version of ghc to use
+          # cabal-version: 'latest'. Omitted, but defaults to 'latest'
+          enable-stack: true
+          stack-version: 'latest'
+          
+      - name: Build & test
+        run: stack build --test
+        
+  build-and-test-windows:
+    name: Build and Test -- Windows
+    runs-on: windows-latest 
+    steps:
+      - name: Checkout 
+        uses: actions/checkout@v3
+        
+      - name: Setup stack
+        uses: haskell/actions/setup@v2
+        with:
+          ghc-version: '9.2.4' # Exact version of ghc to use
+          enable-stack: true
+          stack-version: 'latest'
+          
+      - name: Build & test
+        run: stack build --test
+        
+  lint:
+    name: Hlint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        
+      - name: Setup Hlint
+        uses: haskell/actions/hlint-setup@v2
+        
+      - name: Run Hlint
+        uses: haskell/actions/hlint-run@v2
+        with:
+          path: src/
+          fail-on: warning
+        
