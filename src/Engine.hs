@@ -13,6 +13,7 @@ module Engine
     , Object
     , object
     , name
+    , commands
 
     , Relation (..)
 
@@ -23,6 +24,11 @@ module Engine
     , wrapIntoLines
     ) 
   where
+
+
+import {-# SOURCE #-} Engine.CommandProcessor 
+    ( CommandType (..)
+    )
 
 import qualified Data.Map as M
 import Data.Char 
@@ -42,14 +48,19 @@ data Location = Location
     }
 
 data Object = Object
-    -- | ideally should be unique, but can be
-    -- displayed, so be careful
+    -- | ideally should be unique, but is used by
+    -- player to x, take, etc, so be careful
     { oName :: String
     , relations :: [Relation]
     -- | generally, this should be a noun phrase
     -- for compatibility with the sentence builder
     -- in `Object`'s `HasDescription` instance
     , oDescription :: String
+    -- | the idea here is that this is a general
+    -- interface for object commands. I am currently
+    -- unsure of how helpful it will be or even
+    -- how best to implement such an interface
+    , commands :: M.Map CommandType String
     }
 
 -- | used to construct the description of
@@ -104,7 +115,7 @@ emptyLocation = flip Location []
 location :: String -> [Object] -> Location
 location = Location
 
-object :: String -> [Relation] -> String -> Object
+object :: String -> [Relation] -> String -> M.Map CommandType String -> Object
 object = Object
 
 name :: Object -> String
