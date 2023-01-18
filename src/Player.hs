@@ -38,20 +38,24 @@ import Control.Monad.State
 lineLength :: Int
 lineLength = 75
 
+-- | For those curious, the Ln's stand for all the newlines inserted
+-- in various places
+putLnWrappedStrLnLn :: Int -> String -> IO ()
+putLnWrappedStrLnLn lnLength msg = putStrLn . wrapIntoLines lnLength $ "\n" ++ msg ++ "\n"
+
 
 begin :: IO ()
 begin = do
     putStrLn "The Tundra v0.1.0\n by Xavier\n\nType a command, or type '?' for help.\nBlank line or 'q' exits."
-    putStrLn "I guess you could type Ctrl + C, too, but that's bad form.\nIt'll give you an ugly uncaught exception message."
     putStrLn "Please note commands are not case-sensitive.\n"
     let msg = description $ value start
 
-    putStrLn . wrapIntoLines lineLength $ "\n" ++ msg ++ "\n"
-    playGameCmd start
+    putLnWrappedStrLnLn lineLength msg 
+    playGame start
 
 
-playGameCmd :: GameState -> IO ()
-playGameCmd st = do
+playGame :: GameState -> IO ()
+playGame st = do
     putStr "> "
     hFlush stdout
     command <- getLine
@@ -61,11 +65,11 @@ playGameCmd st = do
             case stringToCommand command of 
                 Just cmd -> do
                     let (msg, nst) = runState (executeCommand cmd) st
-                    putStrLn . wrapIntoLines lineLength $ "\n" ++ msg ++ "\n"
-                    playGameCmd nst
+                    putLnWrappedStrLnLn lineLength msg 
+                    playGame nst
 
                 Nothing -> do
                     putStrLn "\nbad command :(\n"
-                    playGameCmd st
+                    playGame st
         )
 

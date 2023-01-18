@@ -15,9 +15,12 @@ import Engine
     , value, Location (objects), name, Object (commands)
     )
 
+import Control.Applicative
+    ( Alternative ( (<|>) )
+    )
+
 import Control.Monad.Except
     ( throwError
-    , catchError
     )
 
 import Control.Monad.State
@@ -35,11 +38,7 @@ import Data.Char
     )
 
 
-data Command 
-    = MoveCommand CommandType Args
-    | ObjectCommand CommandType Args
-    | PlayerCommand CommandType Args
-    | OtherCommand CommandType Args
+data Command = Command CommandType Args
   deriving (Show)
 
 type Args = [String]
@@ -52,8 +51,23 @@ data CommandType
     | Wait
     | Again
     | Help 
-  deriving (Eq, Ord, Bounded, Show, Read)
+  deriving (Eq, Ord, Bounded, Enum, Show, Read)
 
+
+objectCommands :: [CommandType]
+objectCommands = 
+    [ Examine
+    ]
+
+moveCommands :: [CommandType]
+moveCommands = 
+    [ Go
+    ]
+
+playerCommands :: [CommandType]
+playerCommands = 
+    [ Inventory
+    ]
 
 -- | this is only necessary for shortcuts as
 -- `CommandType`'s derived `Read` instance
@@ -66,17 +80,6 @@ commandShorthandMap = M.fromList
     , ("z", Wait)
     , ("g", Again)
     , ("?", Help)
-    ]
-
-commandMap :: M.Map CommandType (Args -> Command)
-commandMap = M.fromList
-    [ (Go, MoveCommand Go)
-    , (Examine, ObjectCommand Examine)
-    , (Look, OtherCommand Look)
-    , (Inventory, PlayerCommand Inventory)
-    , (Wait, OtherCommand Wait)
-    , (Again, OtherCommand Again)
-    , (Help, OtherCommand Help)
     ]
 
 directionLonghandMap :: M.Map String Direction
@@ -103,20 +106,33 @@ parseDirection str = do
     let up = map toUpper str
     let down = map toLower str
     readM up 
-        `catchError` (\_ -> M.lookup down directionLonghandMap)
+        <|> M.lookup down directionLonghandMap
 
 stringToCommand :: String -> Maybe Command
 -- | supports commands directly corresponding to `Command`
--- syntax + shorthand. todo: support just 'north'/'n' etc
-stringToCommand s = do
-    -- if only there was a warning disabler... this is not a bug
-    let cmd:args = case words $ map toLower s of 
-            (c:as) -> c:as
-            [] -> [""]
-    commandType <- readM (toUpper (head cmd) : tail cmd) -- n. b. we must capitalize the first letter for reads' sake
-        `catchError` (\_ -> M.lookup cmd commandShorthandMap)
-    command <- M.lookup commandType commandMap
-    return $ command args
+-- syntax + shorthand. 
+stringToCommand s 
+    = parsed
+    <|> parsedShorthand
+    <|> parsedDirectionShorthand
+
+  where
+    cmd:args = words $ map toLower s
+
+    -- n. b. we must capitalize the first letter for reads' sake
+    parsed = do 
+        cmdType <- readM (toUpper (head cmd) : tail cmd)
+        return $ Command cmdType args
+
+    parsedShorthand = do 
+        cmdType <- M.lookup cmd commandShorthandMap
+        return $ Command cmdType args
+
+    parsedDirectionShorthand = do
+        -- check to make sure cmd is a direction:
+        -- it'll get parsed later on
+        _ <- parseDirection cmd
+        return $ Command Go (cmd : args)
 
 move :: Direction -> GameState -> Maybe GameState
 move dir st = do
@@ -128,9 +144,9 @@ move dir st = do
 -- etc. and returns a message to display to the user
 executeCommand :: Command -> State GameState String
 
-executeCommand (MoveCommand Go args) = do
-    if (not . null) args then 
-        (do
+executeCommand (Command Go args) = do
+    if (not . null) args 
+        then do
             here <- get
             let destination = destinationFrom here
             case destination of
@@ -139,39 +155,17 @@ executeCommand (MoveCommand Go args) = do
                     return $ (description . value) d
                 Nothing -> 
                     return $ head args ++ " is not a direction you can go :("
-        )
+        
         else return "In what direction?"
   where
     destinationFrom place = do
         dir <- parseDirection $ head args
         move dir place
 
-executeCommand (MoveCommand cmd _) = 
-    return $ "<error: " ++ show cmd ++ " is not a movement command. this is a bug>"
 
-executeCommand (ObjectCommand cmd args) = do
-    if (not . null) args then
-        (do
-            here <- get
-            let loc = value here
-                objs = objects loc
-                found = [obj | obj <- objs, name obj == head args]
-            if (not . null) found then
-                (do
-                    let xDescription = M.lookup cmd (commands $ head found)
-                            `catchError` (\_ -> return "")
-                        (Just xdesc) = xDescription
-                    return xdesc
-                )
-                else return $ "What " ++ head args ++ "?"
-        )
-        else return "what object?"
-
-
-executeCommand (PlayerCommand _ _) = return "unfortunately, player commands arent supported yet :("
-executeCommand (OtherCommand Look _) = gets (description . value)
-executeCommand (OtherCommand Wait _) = return "You do nothing in anticipation of what might happen...."
-executeCommand (OtherCommand Help _) = return $
+executeCommand (Command Look _) = gets (description . value)
+executeCommand (Command Wait _) = return "You do nothing in anticipation of what might happen...."
+executeCommand (Command Help _) = return $
     "In The Tundra, unlike The Cave or The Forest, one does not select options, but "
     ++ "rather types in commands, such as \"go north\" and the like. Here is a list "
     ++ "of common commands and a short description of each.\n\n\n"
@@ -190,5 +184,28 @@ executeCommand (OtherCommand Help _) = return $
     ++ "help or a walkthru tutorial. If you want it, make it. This is open source, after all.\n\n"
     ++ "wait (shortcut 'z')\n\tWait. Pretty simple.\n\n"
     ++ "Have fun!"
-executeCommand (OtherCommand cmd _) = 
-    return $ "<error: " ++ show cmd ++ " is not an \"other\" command. this is a bug>"
+
+
+executeCommand (Command cmd args) 
+    | cmd `elem` objectCommands = do
+        if (not . null) args 
+            then do
+                here <- get
+                let loc = value here
+                    objs = objects loc
+                    found = [obj | obj <- objs, name obj == head args]
+                if (not . null) found then
+                    (do
+                        let xDescription 
+                                = M.lookup cmd (commands $ head found)
+                                <|> return ""
+                            (Just xdesc) = xDescription
+                        return xdesc
+                    )
+                    else return $ "What " ++ head args ++ "?"
+            
+            else return "what object?"
+
+
+executeCommand (Command cmd _) = 
+    return $ "<error: " ++ show cmd ++ " is not a supported command. this is a bug>"
