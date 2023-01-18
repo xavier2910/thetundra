@@ -12,6 +12,7 @@ module Engine
 
     , Object
     , object
+    , commandOnlyObject
     , name
     , commands
 
@@ -26,6 +27,7 @@ module Engine
   where
 
 
+-- again, this warning is (alas) wrong
 import {-# SOURCE #-} Engine.CommandProcessor 
     ( CommandType (..)
     )
@@ -114,6 +116,12 @@ emptyLocation = flip Location []
 
 location :: String -> [Object] -> Location
 location = Location
+
+-- | useful to allow examination etc.
+-- of static scenery that should not
+-- be dynamically described
+commandOnlyObject :: String -> M.Map CommandType String -> Object
+commandOnlyObject s = Object s [] ""
 
 object :: String -> [Relation] -> String -> M.Map CommandType String -> Object
 object = Object
