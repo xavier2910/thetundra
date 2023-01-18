@@ -200,11 +200,15 @@ instance HasDescription Location where
         lDescription l
             -- then describe the objects there:
                 -- format them nicely into sentences & stitch them together
-            ++  ( concatMap ((' ' :) . (++ "."). capitalizeFirst . description) 
+            ++  ( concatMap ((' ' :) . (++ ".") . capitalizeFirst . description) 
                 -- but first we have to make sure they
                 -- shouldn't be hidden
-                . filter notInOrOnSomething ) 
-                    (objects l)
+                . filter notInOrOnSomething
+                -- and they actually have something to show
+                -- n. b. this allows cmd-only objs to be hidden
+                -- w/o a bunch of extraneous periods
+                . filter (not . null . description)  
+                )   (objects l)
 
       where
         notInOrOnSomething = not . any isStrictOnOrIn . relations
