@@ -8,6 +8,7 @@ import Engine
     , Tree (Node)
     , Direction (N, W, E, S, NE, SE, SW, NW)
     , object
+    , commandOnlyObject
     , Relation (OnLoose, InLoose, VerbPhrase)
     )
 
@@ -18,9 +19,115 @@ import Engine.CommandProcessor
 import qualified Data.Map as M
 
 start :: Tree Direction Location
-start = Node (emptyLocation $ "You are looking into the mouth of a dark cave in the side of a "
+start = Node (location  ("You are looking into the mouth of a dark cave in the side of a "
                            ++ "tall, icy cliff to the immediate east. Surrounding you is a "
                            ++ "tundra so open you can even see your hand in front of your face.")
+                        [ commandOnlyObject 
+                            "cave"
+                            (M.fromList
+                                [ (Examine, "The cave appears to be of the dark and rocky variety.")
+                                ]
+                            )
+                        , commandOnlyObject 
+                            "cliff"
+                            (M.fromList
+                                [ (Examine, "The cliff is covered in ice and looks very treacherous.")
+                                ]
+                            )
+                        , commandOnlyObject 
+                            "tundra"
+                            (M.fromList
+                                [ (Examine, "There is snow everywhere. Slate-grey sky.")
+                                ]
+                            )
+                        , commandOnlyObject 
+                            "north"
+                            (M.fromList
+                                [ (Examine, "Snow, snow and more snow.")
+                                ]
+                            )
+                        , commandOnlyObject 
+                            "n"
+                            (M.fromList
+                                [ (Examine, "Snow, snow and more snow.")
+                                ]
+                            )
+                        , commandOnlyObject 
+                            "northwest"
+                            (M.fromList
+                                [ (Examine, "Snow, snow and more snow.")
+                                ]
+                            )
+                        , commandOnlyObject 
+                            "nw"
+                            (M.fromList
+                                [ (Examine, "Snow, snow and more snow.")
+                                ]
+                            )
+                        , commandOnlyObject 
+                            "northeast"
+                            (M.fromList
+                                [ (Examine, "Snow, snow and more snow. Also the cliff you're next to.")
+                                ]
+                            )
+                        , commandOnlyObject 
+                            "ne"
+                            (M.fromList
+                                [ (Examine, "Snow, snow and more snow. Also the cliff you're next to.")
+                                ]
+                            )
+                        , commandOnlyObject 
+                            "west"
+                            (M.fromList
+                                [ (Examine, "Snow, snow and more snow. To the horizon. It appears flat.")
+                                ]
+                            )
+                        , commandOnlyObject 
+                            "w"
+                            (M.fromList
+                                [ (Examine, "Snow, snow and more snow. To the horizon. It appears flat.")
+                                ]
+                            )
+                        , commandOnlyObject 
+                            "south"
+                            (M.fromList
+                                [ (Examine, "Snow, snow and more snow. But perhaps a treeline.")
+                                ]
+                            )
+                        , commandOnlyObject 
+                            "s"
+                            (M.fromList
+                                [ (Examine, "Snow, snow and more snow. But perhaps a treeline.")
+                                ]
+                            )
+                        , commandOnlyObject 
+                            "southwest"
+                            (M.fromList
+                                [ (Examine, "Snow, snow and more snow.")
+                                ]
+                            )
+                        , commandOnlyObject 
+                            "sw"
+                            (M.fromList
+                                [ (Examine, "Snow, snow and more snow.")
+                                ]
+                            )
+                        , commandOnlyObject 
+                            "southeast"
+                            (M.fromList
+                                [ (Examine, "Snow, snow and more snow. Also the cliff you're next to.")
+                                ]
+                            )
+                        , commandOnlyObject 
+                            "se"
+                            (M.fromList
+                                [ (Examine, "Snow, snow and more snow. Also the cliff you're next to.")
+                                ]
+                            )
+                        
+                        ]
+                           
+             )
              (M.fromList [ (E, incave)
                          , (W, emptiness)
                          , (N, signpost)
