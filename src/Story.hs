@@ -4,12 +4,11 @@ module Story
   where
 
 import Engine
-    ( Location, emptyLocation, location
+    ( Location, location
     , Tree (Node)
     , Direction (N, W, E, S, NE, SE, SW, NW)
     , Object
     , object
-    , commandOnlyObject
     , Relation (OnLoose, InLoose, VerbPhrase)
     )
 
