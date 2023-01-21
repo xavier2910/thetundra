@@ -18,9 +18,9 @@ import Engine
 import Control.Applicative
     ( Alternative ( (<|>) )
     )
-
 import Control.Monad.Except
     ( throwError
+    , guard
     )
 
 import Control.Monad.State
@@ -110,14 +110,19 @@ parseDirection str = do
 
 stringToCommand :: String -> Maybe Command
 -- | supports commands directly corresponding to `Command`
--- syntax + shorthand. 
-stringToCommand s 
-    = parsed
-    <|> parsedShorthand
-    <|> parsedDirectionShorthand
+-- syntax + shorthand and bare directions. 
+stringToCommand s = do
+
+    guard $ (not . null) cmdAndArgs
+
+    parsed
+        <|> parsedShorthand
+        <|> parsedDirectionShorthand
 
   where
-    cmd:args = words $ map toLower s
+    cmdAndArgs = words $ map toLower s
+    cmd = head cmdAndArgs
+    args = tail cmdAndArgs
 
     -- n. b. we must capitalize the first letter for reads' sake
     parsed = do 
@@ -169,9 +174,9 @@ executeCommand (Command Help _) = return $
     "In The Tundra, unlike The Cave or The Forest, one does not select options, but "
     ++ "rather types in commands, such as \"go north\" and the like. Here is a list "
     ++ "of common commands and a short description of each.\n\n\n"
-    ++ "go [direction]\n\tGo in the indicated cardinal direction. you will be "
+    ++ "go [direction]\n\tGo in the indicated cardinal direction. You will be "
     ++ "informed of what things lie in various directions.\n\n"
-    ++ "look (shortcut 'l')\n\tDisplay the surrounding environment. helpful if theres a bunch of "
+    ++ "look (shortcut 'l')\n\tDisplay the surrounding environment. Helpful if theres a bunch of "
     ++ "clutter in your terminal.\n\n"
     ++ "again (shortcut 'g')\n\tDo whatever you just did, again.\n\n"
     ++ "inventory (shortcut 'i')\n\tTake inventory. Currently not implemented :(\n\n"

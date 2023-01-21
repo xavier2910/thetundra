@@ -46,7 +46,7 @@ putLnWrappedStrLnLn lnLength msg = putStrLn . wrapIntoLines lnLength $ "\n" ++ m
 
 begin :: IO ()
 begin = do
-    putStrLn "The Tundra v0.1.0\n by Xavier\n\nType a command, or type '?' for help.\nBlank line or 'q' exits."
+    putStrLn "The Tundra v0.1.0\n by Xavier\n\nType a command, or type '?' for help.\n'q' exits."
     putStrLn "Please note commands are not case-sensitive.\n"
     let msg = description $ value start
 
@@ -60,7 +60,7 @@ playGame st = do
     hFlush stdout
     command <- getLine
     
-    when ((not . null) command && head command /= 'q')
+    when (null command || head command /= 'q')
         (do
             case stringToCommand command of 
                 Just cmd -> do
