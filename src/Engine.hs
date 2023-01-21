@@ -29,13 +29,14 @@ module Engine
 
 -- again, this warning is (alas) wrong
 import {-# SOURCE #-} Engine.CommandProcessor 
-    ( CommandType (..)
+    ( CommandType
     )
 
 import qualified Data.Map as M
 import Data.Char 
     ( toUpper 
     )
+
 
 data Direction = N | S | E | W | NE | NW | SE | SW deriving (Show, Read, Eq, Ord)
 
@@ -119,7 +120,7 @@ location = Location
 
 -- | useful to allow examination etc.
 -- of static scenery that should not
--- be dynamically described
+-- be dynamically described.
 commandOnlyObject :: String -> M.Map CommandType String -> Object
 commandOnlyObject s = Object s [] ""
 
@@ -220,7 +221,7 @@ instance HasDescription Object where
     description o = 
         -- take a noun phrase provided...
         oDescription o
-            -- and completes the sentence based on the relations
+            -- and complete the sentence based on the relations
             -- present (if any)
             ++ if not . any isLooseOrStrictOnOrIn $ relations o
                 then "" -- if there aren't any, we give up (it's probably
