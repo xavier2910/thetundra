@@ -8,9 +8,21 @@ and this project adheres to the
 
 ## Unreleased
 
+### Features:
+
+- `go` command is now redundant, you can just type a direction.
+- `examine` command functions.
+- Much more \(examinable\) content added to existing locations.
+
+### Fixes:
+
+- fixed `go` with no args crashing with `Prelude.head: empty list`.
+
 
 ## 0.1.0 - 2023-01-12
-### initial release:
+
+### Initial release:
+
 - Supports commands look, go, & help.
 - Contains five locations (pathetic, I know).
 - Auto-wraps displayed messages.
