@@ -100,17 +100,17 @@ readM str = case reads str of
     _ -> throwError ()
 
 -- | helper function to account for longhand
--- its a thinking crutch for me
+-- it's a thinking crutch for me
 parseDirection :: String -> Maybe Direction
 parseDirection str = do
     let up = map toUpper str
     let down = map toLower str
-    readM up 
-        <|> M.lookup down directionLonghandMap
+    readM up -- the directions are constructors in all uppercase
+        <|> M.lookup down directionLonghandMap -- the longhands are in a map and lowercase by convention
 
-stringToCommand :: String -> Maybe Command
 -- | supports commands directly corresponding to `Command`
 -- syntax + shorthand and bare directions. 
+stringToCommand :: String -> Maybe Command
 stringToCommand s = do
 
     guard $ (not . null) cmdAndArgs
@@ -176,18 +176,19 @@ executeCommand (Command Help _) = return $
     ++ "of common commands and a short description of each.\n\n\n"
     ++ "go [direction]\n\tGo in the indicated cardinal direction. You will be "
     ++ "informed of what things lie in various directions.\n\n"
-    ++ "look (shortcut 'l')\n\tDisplay the surrounding environment. Helpful if theres a bunch of "
+    ++ "look (shortcut 'l')\n\tDisplay the surrounding environment. Helpful if there's a bunch of "
     ++ "clutter in your terminal.\n\n"
     ++ "again (shortcut 'g')\n\tDo whatever you just did, again.\n\n"
     ++ "inventory (shortcut 'i')\n\tTake inventory. Currently not implemented :(\n\n"
     ++ "examine [thing] (shortcut 'x')\n\tTake a more detailed look at [thing]. "
     ++ "Ideally, [thing] should be the one-word name of an object in your immediate "
-    ++ "environment. Hopefully i can get some nice support for this up; this is an "
+    ++ "environment. Hopefully I can get some nice support for this up; this is an "
     ++ "essential command. \"When in doubt, examine more.\" This is perhaps the one "
     ++ "most important command. Use it liberally.\n\n"
     ++ "help (shortcut '?')\n\tDisplay this help text. I have no ambitions for contextual "
     ++ "help or a walkthru tutorial. If you want it, make it. This is open source, after all.\n\n"
     ++ "wait (shortcut 'z')\n\tWait. Pretty simple.\n\n"
+    ++ "These are not the only commands, feel free to try what makes sense in context.\n\n"
     ++ "Have fun!"
 
 
