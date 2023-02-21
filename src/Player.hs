@@ -61,15 +61,14 @@ playGame st = do
     command <- getLine
     
     when (null command || head command /= 'q')
-        (do
-            case stringToCommand command of 
-                Just cmd -> do
-                    let (msg, nst) = runState (executeCommand cmd) st
-                    putLnWrappedStrLnLn lineLength msg 
-                    playGame nst
+        (case stringToCommand command of 
+            Just cmd -> do
+                let (msg, nst) = runState (executeCommand cmd) st
+                putLnWrappedStrLnLn lineLength msg 
+                playGame nst
 
-                Nothing -> do
-                    putStrLn "\nbad command :(\n"
-                    playGame st
+            Nothing -> do
+                putStrLn "\nbad command :(\n"
+                playGame st
         )
 

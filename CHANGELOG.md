@@ -16,7 +16,7 @@ and this project adheres to the
 
 ### Fixes:
 
-- fixed `go` with no args crashing with `Prelude.head: empty list`.
+- Fixed `go` with no args crashing with `Prelude.head: empty list`.
 
 
 ## 0.1.0 - 2023-01-12
