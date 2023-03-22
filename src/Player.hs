@@ -44,13 +44,14 @@ putLnWrappedStrLnLn :: Int -> String -> IO ()
 putLnWrappedStrLnLn lnLength msg = putStrLn . wrapIntoLines lnLength $ "\n" ++ msg ++ "\n"
 
 
+
 begin :: IO ()
 begin = do
-    putStrLn "The Tundra v0.1.0\n by Xavier\n\nType a command, or type '?' for help.\n'q' exits."
+    putStrLn "The Tundra v0.1.2\n by Xavier\n\nType a command, or type '?' for help.\n'q' exits."
     putStrLn "Please note commands are not case-sensitive.\n"
-    let msg = description $ value start
+    let curLoc = value start
 
-    putLnWrappedStrLnLn lineLength msg 
+    putLnWrappedStrLnLn lineLength $ description curLoc
     playGame start
 
 

@@ -92,6 +92,8 @@ directionLonghandMap = M.fromList
     , ("northeast", NE)
     , ("southwest", SW)
     , ("southeast", SE)
+    , ("down", D)
+    , ("up", U)
     ]
 
 readM :: (Read r) => String -> Maybe r
@@ -174,7 +176,7 @@ executeCommand (Command Help _) = return $
     "In The Tundra, unlike The Cave or The Forest, one does not select options, but "
     ++ "rather types in commands, such as \"go north\" and the like. Here is a list "
     ++ "of common commands and a short description of each.\n\n\n"
-    ++ "go [direction]\n\tGo in the indicated cardinal direction. You will be "
+    ++ "go [direction]\n\tGo in the indicated direction. You will be "
     ++ "informed of what things lie in various directions.\n\n"
     ++ "look (shortcut 'l')\n\tDisplay the surrounding environment. Helpful if there's a bunch of "
     ++ "clutter in your terminal.\n\n"

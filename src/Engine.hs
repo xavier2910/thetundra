@@ -38,7 +38,8 @@ import Data.Char
     )
 
 
-data Direction = N | S | E | W | NE | NW | SE | SW deriving (Show, Read, Eq, Ord)
+data Direction = N | S | E | W | NE | NW | SE | SW
+               | D | U deriving (Show, Read, Eq, Ord)
 
 -- | Non-binary tree. Never empty. Uses a Data.Map.Map to keep track of its children.
 data Tree k v
@@ -113,7 +114,7 @@ value (Node x _) = x
 value (Leaf x) = x
 
 emptyLocation :: String -> Location
-emptyLocation = flip Location []
+emptyLocation desc = location desc []
 
 location :: String -> [Object] -> Location
 location = Location

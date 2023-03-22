@@ -1,10 +1,10 @@
 name:                thetundra
-version:             0.1.1
+version:             0.1.2
 github:              "xavier2910/thetundra"
 license:             GPL-3
 author:              "Xavier Distelzweig"
 maintainer:          "x.distelzweig@gmail.com"
-copyright:           "none"
+copyright:           "Xavier Distelzweig"
 
 extra-source-files:
 - README.md
@@ -23,6 +23,7 @@ dependencies:
 - base >= 4.7 && < 5
 - containers
 - mtl >= 2.2.2
+- ansi-terminal
 
 ghc-options:
 - -Wall
