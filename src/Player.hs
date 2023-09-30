@@ -1,6 +1,6 @@
-module Player 
-    ( begin 
-    ) 
+module Player
+    ( begin
+    )
   where
 
 
@@ -16,20 +16,20 @@ import Engine.CommandProcessor
     , executeCommand
     )
 
-import Story 
-    ( start 
+import Story
+    ( start
     )
 
-import System.IO 
+import System.IO
     ( hFlush
-    , stdout 
+    , stdout
     )
 
 import Control.Monad
     ( when
     )
 
-import Control.Monad.State 
+import Control.Monad.State
     ( runState
     )
 
@@ -46,11 +46,11 @@ putLnWrappedStrLnLn lnLength msg = putStrLn . wrapIntoLines lnLength $ "\n" ++ m
 
 begin :: IO ()
 begin = do
-    putStrLn "The Tundra v0.1.0\n by Xavier\n\nType a command, or type '?' for help.\n'q' exits."
+    putStrLn "The Tundra v0.2.0\n by Xavier\n\nType a command, or type '?' for help.\n'q' exits."
     putStrLn "Please note commands are not case-sensitive.\n"
-    let msg = description $ value start
 
-    putLnWrappedStrLnLn lineLength msg 
+    let msg = (description . value. snd) start
+    putLnWrappedStrLnLn lineLength msg
     playGame start
 
 
@@ -59,12 +59,12 @@ playGame st = do
     putStr "> "
     hFlush stdout
     command <- getLine
-    
+
     when (null command || head command /= 'q')
-        (case stringToCommand command of 
+        (case stringToCommand command of
             Just cmd -> do
                 let (msg, nst) = runState (executeCommand cmd) st
-                putLnWrappedStrLnLn lineLength msg 
+                putLnWrappedStrLnLn lineLength msg
                 playGame nst
 
             Nothing -> do

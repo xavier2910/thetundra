@@ -3,7 +3,7 @@ module Engine.CommandProcessor
     , executeCommand
     , readM
     , CommandType (..)
-    ) 
+    )
   where
 
 
@@ -12,7 +12,7 @@ import Engine
     , Direction (..)
     , children
     , HasDescription (description)
-    , value, Location (objects), name, Object (commands)
+    , value, Location (objects), name, Object (commands), Place, treeGet, tzHere, tzGoto, getid
     )
 
 import Control.Applicative
@@ -23,18 +23,19 @@ import Control.Monad.Except
     , guard
     )
 
-import Control.Monad.State
-    ( State
-    , get
-    , gets
-    , put
-    )    
-
 import qualified Data.Map as M
 
-import Data.Char 
+import Data.Char
     ( toLower
     , toUpper
+    )
+
+import Data.Maybe 
+    ( fromMaybe
+    )
+
+import Control.Monad.State
+    ( gets, State
     )
 
 
@@ -43,33 +44,33 @@ data Command = Command CommandType Args
 
 type Args = [String]
 
-data CommandType 
+data CommandType
     = Go
     | Examine
     | Look
     | Inventory
     | Wait
     | Again
-    | Help 
+    | Help
   deriving (Eq, Ord, Bounded, Enum, Show, Read)
 
 
 objectCommands :: [CommandType]
-objectCommands = 
+objectCommands =
     [ Examine
     ]
 
 moveCommands :: [CommandType]
-moveCommands = 
+moveCommands =
     [ Go
     ]
 
 playerCommands :: [CommandType]
-playerCommands = 
+playerCommands =
     [ Inventory
     ]
 
--- | this is only necessary for shortcuts as
+-- this is only necessary for shortcuts as
 -- `CommandType`'s derived `Read` instance
 -- can do the heavy lifting for us
 commandShorthandMap :: M.Map String CommandType
@@ -95,7 +96,7 @@ directionLonghandMap = M.fromList
     ]
 
 readM :: (Read r) => String -> Maybe r
-readM str = case reads str of 
+readM str = case reads str of
     [(x, _)] -> return x
     _ -> throwError ()
 
@@ -107,6 +108,7 @@ parseDirection str = do
     let down = map toLower str
     readM up -- the directions are constructors in all uppercase
         <|> M.lookup down directionLonghandMap -- the longhands are in a map and lowercase by convention
+
 
 -- | supports commands directly corresponding to `Command`
 -- syntax + shorthand and bare directions. 
@@ -125,11 +127,11 @@ stringToCommand s = do
     args = tail cmdAndArgs
 
     -- n. b. we must capitalize the first letter for reads' sake
-    parsed = do 
+    parsed = do
         cmdType <- readM (toUpper (head cmd) : tail cmd)
         return $ Command cmdType args
 
-    parsedShorthand = do 
+    parsedShorthand = do
         cmdType <- M.lookup cmd commandShorthandMap
         return $ Command cmdType args
 
@@ -139,10 +141,17 @@ stringToCommand s = do
         _ <- parseDirection cmd
         return $ Command Go (cmd : args)
 
-move :: Direction -> GameState -> Maybe GameState
+
+move :: Direction -> Place -> State GameState Place
 move dir st = do
-    chs <- children st
-    M.lookup dir chs
+    targetPlace <- treeGet targetId
+    return $ fromMaybe st targetPlace
+
+  where
+    targetId = fromMaybe
+      "" -- so what this value is doesn't matter, provided it's not a valid TreeID...
+      (do chs <- children st
+          M.lookup dir chs)
 
 -- | a stateful computation that takes a command and 
 -- \"changes\" the current location, eventually inventory,
@@ -150,25 +159,26 @@ move dir st = do
 executeCommand :: Command -> State GameState String
 
 executeCommand (Command Go args) = do
-    if (not . null) args 
+    if (not . null) args
         then do
-            here <- get
+            here <- tzHere
             let destination = destinationFrom here
             case destination of
                 Just d -> do
-                    put d
-                    return $ (description . value) d
-                Nothing -> 
+                    dest <- d
+                    tzGoto $ getid dest
+                    return $ (description . value) dest
+                Nothing ->
                     return $ head args ++ " is not a direction you can go :("
-        
+
         else return "In what direction?"
   where
     destinationFrom place = do
         dir <- parseDirection $ head args
-        move dir place
+        return $ move dir place
 
 
-executeCommand (Command Look _) = gets (description . value)
+executeCommand (Command Look _) = gets (description . value . snd)
 executeCommand (Command Wait _) = return "You do nothing in anticipation of what might happen...."
 executeCommand (Command Help _) = return $
     "In The Tundra, unlike The Cave or The Forest, one does not select options, but "
@@ -192,26 +202,24 @@ executeCommand (Command Help _) = return $
     ++ "Have fun!"
 
 
-executeCommand (Command cmd args) 
+executeCommand (Command cmd args)
     | cmd `elem` objectCommands = do
-        if (not . null) args 
+        if (not . null) args
             then do
-                here <- get
+                here <- tzHere
                 let loc = value here
                     objs = objects loc
                     found = [obj | obj <- objs, name obj == head args]
                 if (not . null) found then
                     (do
-                        let xDescription 
-                                = M.lookup cmd (commands $ head found)
-                                <|> return ""
-                            (Just xdesc) = xDescription
-                        return xdesc
+                        let xDescription
+                                = fromMaybe "" $ M.lookup cmd (commands $ head found)    
+                        return xDescription
                     )
                     else return $ "What " ++ head args ++ "?"
-            
+
             else return "what object?"
 
 
-executeCommand (Command cmd _) = 
+executeCommand (Command cmd _) =
     return $ "<error: " ++ show cmd ++ " is not a supported command. this is a bug>"

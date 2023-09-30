@@ -1,13 +1,13 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.35.0.
+-- This file has been generated from package.yaml by hpack version 0.35.1.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: df119a96fd3af401941d601be1d30b638f9c30e35df7af7e0aaaef90945146bf
+-- hash: 3ec5290537663c3da9bf835ca10acfbdcfb3cbf01b5eec68e9a83b4832cd6a55
 
 name:           thetundra
-version:        0.1.1
+version:        0.2.0
 synopsis:       sequel to The Cave and The Forest
 description:    Please see the README on GitHub at <https://github.com/xavier2910/thetundra#readme>
 category:       Desktop/Text Adventure

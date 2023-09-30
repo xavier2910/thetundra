@@ -17,7 +17,7 @@
 #
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
-resolver: ghc-9.2.4 # hls doesn't support 9.2.5 (in lts-20.2)
+resolver: ghc-9.2.8 # hls keeps changing their support ...
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.

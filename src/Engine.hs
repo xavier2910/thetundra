@@ -1,9 +1,19 @@
-module Engine 
+module Engine
     ( Direction (..)
 
-    , Tree (Leaf, Node)
+    , Tree
+    , TreeID
+    , TreeZipper
+    , initialize
+    , node
+    , leaf
     , children
-    , value 
+    , value
+    , getid
+    , treeAdd
+    , treeGet
+    , tzHere
+    , tzGoto
 
     , Location
     , objects
@@ -21,29 +31,50 @@ module Engine
     , HasDescription (..)
 
     , GameState
+    , Place
 
     , wrapIntoLines
-    ) 
+    )
   where
 
 
 -- again, this warning is (alas) wrong
-import {-# SOURCE #-} Engine.CommandProcessor 
+import {-# SOURCE #-} Engine.CommandProcessor
     ( CommandType
     )
 
 import qualified Data.Map as M
-import Data.Char 
-    ( toUpper 
+import qualified Data.Bifunctor
+
+import Data.Char
+    ( toUpper
+    )
+
+import Control.Monad.State
+    ( State
+    , MonadState (get, put)
+    , gets
+    )
+
+import Data.Maybe 
+    ( fromMaybe
     )
 
 
 data Direction = N | S | E | W | NE | NW | SE | SW deriving (Show, Read, Eq, Ord)
 
 -- | Non-binary tree. Never empty. Uses a Data.Map.Map to keep track of its children.
+-- new since 0.2.0: uses `TreeID`s (`String`s) to keep track of its children
+-- 
+-- The idea here is to have a master list of all the nodes/leaves in a context, and 
+-- use `TreeID`s to look up the child nodes. So, this module provides the `treeAdd`
+-- and `treeGet` stateful monadic functions to enable insertion into the state and lookup
+-- in the state respectively. See those functions for more information.
 data Tree k v
-    = Leaf v
-    | Node v (M.Map k (Tree k v))
+    = Leaf v TreeID
+    | Node v TreeID (M.Map k TreeID)
+
+type TreeID = String
 
 data Location = Location
     { lDescription :: String
@@ -90,12 +121,21 @@ data Relation
     -- constructing descriptions, eg. 'sits disquietingly' 
     | VerbPhrase String
 
--- | semantic type synonym 
--- a `Thing` value shuold equal the name
--- of an `Object` in the current context
+-- | semantic type synonym.
+-- A `Thing` value should equal the name
+-- of an `Object` in the current context.
 type Thing = String
 
-type GameState = Tree Direction Location
+-- | This type carries the gamestate -- the current 
+-- location and all the other locations in the "world"
+type GameState = TreeZipper Direction Location
+type Place = Tree Direction Location
+
+type TreeZipper k v = (TreeStack k v, Tree k v)
+type TreeStack k v = M.Map TreeID (Tree k v)
+
+type TreeState k v r = State (TreeZipper k v) r
+
 
 
 -- | Honestly, who wants to remember `oDescription`
@@ -104,13 +144,52 @@ class HasDescription d where
     description :: d -> String
 
 
-children :: Tree k v -> Maybe (M.Map k (Tree k v))
-children (Node _ ch) = Just ch
-children (Leaf _) = Nothing
+initialize :: Tree k v -> TreeZipper k v
+initialize t = (M.fromList [(getid t, t)], t)
+
+node :: Ord k => v -> TreeID -> M.Map k (Tree k v) -> Tree k v
+node x i m = Node x i idMap
+  where
+    idMap = M.fromList zippedKsAndIDs
+    zippedKsAndIDs = zip ks ids
+    ks = M.keys m
+    ids = map getid $ M.elems m
+
+-- | Abstraction layer for the "one big list" which holds
+-- all the nodes for lookup by id
+treeAdd :: Tree k v -> TreeState k v ()
+treeAdd tr = do
+    mp <- get
+    put $ Data.Bifunctor.first (M.insert (getid tr) tr) mp
+
+-- | The other end of the "one big list" abstraction
+-- layer. Retrieves a node by id.
+treeGet :: TreeID -> TreeState k v (Maybe (Tree k v))
+treeGet i = gets $ M.lookup i . fst
+
+tzHere :: TreeState k v (Tree k v)
+tzHere = gets snd
+
+tzGoto :: TreeID -> TreeState k v ()
+tzGoto i = do
+    st <- get
+    target <- treeGet i
+    put (fst st, fromMaybe (snd st) target)
+
+leaf :: v -> TreeID -> Tree k v
+leaf = Leaf
+
+children :: Tree k v -> Maybe (M.Map k TreeID)
+children (Node _ _ ch) = Just ch
+children (Leaf _ _) = Nothing
 
 value :: Tree k v -> v
-value (Node x _) = x
-value (Leaf x) = x
+value (Node x _ _) = x
+value (Leaf x _) = x
+
+getid :: Tree k v -> TreeID
+getid (Node _ i _) = i
+getid (Leaf _ i) = i
 
 emptyLocation :: String -> Location
 emptyLocation = flip Location []
@@ -150,7 +229,7 @@ isVerbPhrase (VerbPhrase _) = True
 isVerbPhrase _ = False
 
 relationToString :: Relation -> String
-relationToString (OnStrict str) = "on " ++ str 
+relationToString (OnStrict str) = "on " ++ str
 relationToString (OnLoose str) = "on " ++ str
 relationToString (InStrict str) = "in " ++ str
 relationToString (InLoose str) = "in " ++ str
@@ -162,12 +241,12 @@ wrapIntoLines :: Int -> String -> String
 wrapIntoLines l str = if length str > l -- end case if the line is too short 
                       && l > 0 -- and idiot-proof it
     -- take this line, a newline, and the rest, wrapped
-    then thisLine 
-        ++ "\n" 
+    then thisLine
+        ++ "\n"
         ++ wrapIntoLines l (drop dropLength str)
     else str
 
-  where 
+  where
     thisLine
         -- if we have a newline in the next l characters,
         -- 'thisLine' should only go up to that newline
@@ -180,7 +259,7 @@ wrapIntoLines l str = if length str > l -- end case if the line is too short
         -- if there's no space, we just stick a dash
         -- on it
         | otherwise = take_l_str ++ "-"
-        
+
     take_l_str = take l str
 
     dropLength
@@ -201,14 +280,14 @@ instance HasDescription Location where
         lDescription l
             -- then describe the objects there:
                 -- format them nicely into sentences & stitch them together
-            ++  ( concatMap ((' ' :) . (++ ".") . capitalizeFirst . description) 
+            ++  ( concatMap ((' ' :) . (++ ".") . capitalizeFirst . description)
                 -- but first we have to make sure they
                 -- shouldn't be hidden
                 . filter notInOrOnSomething
                 -- and they actually have something to show
                 -- n. b. this allows cmd-only objs to be hidden
                 -- w/o a bunch of extraneous periods
-                . filter (not . null . description)  
+                . filter (not . null . description)
                 )   (objects l)
 
       where
@@ -218,7 +297,7 @@ instance HasDescription Location where
         capitalizeFirst [] = []
 
 instance HasDescription Object where
-    description o = 
+    description o =
         -- take a noun phrase provided...
         oDescription o
             -- and complete the sentence based on the relations
