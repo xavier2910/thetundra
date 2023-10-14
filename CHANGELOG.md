@@ -8,6 +8,16 @@ and this project adheres to the
 
 ## Unreleased
 
+### Internal:
+
+- The location tree is no longer infinitely deep; there is now only one instance of every 
+location, rather than one being generated inside further locations. This was done with
+an eye to performance down the line: each change ever made to the gamestate \(other than 
+location\) would have to be reapplied every time the player changed location. Whether this
+is worth the complexity entailed is an open question. `non-infinite` is now a secondary
+trunk with master list.
+
+
 ## 0.1.1
 
 ### Features:
