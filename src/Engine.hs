@@ -61,7 +61,8 @@ import Data.Maybe
     )
 
 
-data Direction = N | S | E | W | NE | NW | SE | SW deriving (Show, Read, Eq, Ord)
+data Direction = N | S | E | W | NE | NW | SE | SW 
+               | D | U deriving (Show, Read, Eq, Ord)
 
 -- | Non-binary tree. Never empty. Uses a Data.Map.Map to keep track of its children.
 -- new since 0.2.0: uses `TreeID`s (`String`s) to keep track of its children
@@ -153,7 +154,7 @@ node x i m = Node x i idMap
     idMap = M.fromList zippedKsAndIDs
     zippedKsAndIDs = zip ks ids
     ks = M.keys m
-    ids = map getid $ M.elems m
+    ids = map getid $ M.elems m -- are they necessarily returned in the same order?
 
 -- | Abstraction layer for the "one big list" which holds
 -- all the nodes for lookup by id
@@ -192,7 +193,7 @@ getid (Node _ i _) = i
 getid (Leaf _ i) = i
 
 emptyLocation :: String -> Location
-emptyLocation = flip Location []
+emptyLocation desc = location desc []
 
 location :: String -> [Object] -> Location
 location = Location

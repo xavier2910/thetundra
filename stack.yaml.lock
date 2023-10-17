@@ -3,5 +3,33 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-packages: []
+packages:
+- completed:
+    hackage: ansi-terminal-0.11.4@sha256:410737137c798e23339a08435a5511785ebf1db08700e37debbd7801cf73fc82,3584
+    pantry-tree:
+      sha256: 49bc6ef92292ee8b663a40cf5170af1efaaa4ed84155b65ad41eabf1faf9b18f
+      size: 1462
+  original:
+    hackage: ansi-terminal-0.11.4
+- completed:
+    hackage: Win32-2.13.4.0@sha256:9b8a82743985f8a95c03b2bc64be33ad1cd603e2493cb8b48d3cb923556dbb61,5585
+    pantry-tree:
+      sha256: aec6e0f00f4cc90416e3a6cb4bf972ebdf8927784900579acf72bfe4febb7744
+      size: 8011
+  original:
+    hackage: Win32-2.13.4.0
+- completed:
+    hackage: colour-2.3.6@sha256:ebdcbf15023958838a527e381ab3c3b1e99ed12d1b25efeb7feaa4ad8c37664a,2378
+    pantry-tree:
+      sha256: 03f8e22f364deb86098dbfbe0bf83c896437b2355f139abdac0402658fb6ac7e
+      size: 1183
+  original:
+    hackage: colour-2.3.6
+- completed:
+    hackage: filepath-1.4.100.0@sha256:45a49fc8c379b33fdba3c8cc96dcf22b15c50995d0f4b8638e9b6b9423d1b877,5875
+    pantry-tree:
+      sha256: 150ca16c823a018d108db31d910f88c2c85a212d13339b4744fa4afa4d58a385
+      size: 3407
+  original:
+    hackage: filepath-1.4.100.0
 snapshots: []

@@ -6,10 +6,10 @@ module Story
 import Engine
     ( Location, location
     , Tree, node
-    , Direction (N, W, E, S, NE, SE, SW, NW)
+    , Direction (..)
     , Object
     , object
-    , Relation (OnLoose, InLoose, VerbPhrase)
+    , Relation (OnLoose, InLoose, VerbPhrase, OnStrict, InStrict)
     , GameState
     , TreeZipper
     , treeAdd
@@ -32,6 +32,13 @@ import Control.Monad.State
 import qualified Data.Map as M
 
 
+
+examineOnlyObject :: String -> String -> Object
+examineOnlyObject n xdesc = object n [] "" (M.fromList [(Examine, xdesc)])
+
+
+
+
 start :: GameState
 start = execState boot zipper
 
@@ -41,9 +48,6 @@ zipper = initialize playerStart
 boot :: State GameState ()
 boot = forM_ [playerStart, incave, emptiness, signpost, forestNorthEdge] treeAdd
 
-
-examineOnlyObject :: String -> String -> Object
-examineOnlyObject n xdesc = object n [] "" (M.fromList [(Examine, xdesc)])
 
 
 playerStart :: Tree Direction Location
@@ -73,21 +77,22 @@ playerStart = node (location  ("You are looking into the mouth of a dark cave in
 
 incave :: Tree Direction Location
 incave = node (location ("You are standing in a very dark cave. You can barely make out "
-                      ++ "a sloping upward passage to the west.")
+                      ++ "a sloping upward passage to the west. In the middle of the room is "
+                      ++ "a round hole with a ladder in it.")
 
-                        [ object
-                            "penny"
+                        [ object 
+                            "penny" 
                             [OnLoose "the ground", VerbPhrase "glints"]
                             "a shiny penny"
-                            (M.fromList
+                            (M.fromList 
                                 [ (Examine, "The penny is very shiny indeed, but it has no face.")
                                 ]
                             )
 
-                        , object
-                            "chair"
-                            [InLoose "a dark corner of the cave", VerbPhrase "crouches"]
-                            "a small chair about three inches tall"
+                        , object 
+                            "chair" 
+                            [InLoose "a dark corner of the cave", VerbPhrase "crouches"] 
+                            "a small chair about three inches tall" 
                             (M.fromList
                                 [ (Examine, "This chair appears to be made out of gold.")
                                 ]
@@ -103,10 +108,93 @@ incave = node (location ("You are standing in a very dark cave. You can barely m
                                     ++ "artificial in origin, although whoever hewed it was not terribly skilled at his craft."
                             )
 
+                        , examineOnlyObject
+                            "ladder"
+                            ("The ladder, though old, appears very strong. It decends down a roughly cylindrical hole into darker darkness than the darkness "
+                                    ++ "of the dark cave. Then again, the dark cave has some light from that passage."
+                            )
+                        
                         ]
               )
               "incave"
-              (M.fromList [ (W, playerStart) ])
+              (M.fromList 
+                    [ (W, playerStart) 
+                    , (D, tjoint)
+                    ]
+              )
+
+tjoint :: Tree Direction Location
+tjoint = node 
+    (location
+        (  "You are hanging on to an ancient steel ladder on the wall of a small circular vertical hole. "
+        ++ "The ladder stretches both up and down a fair long ways. Up you see a pale grey circle marking "
+        ++ "the top of this passage. Down is only darkness. There is a door in the wall, to the north."
+        )
+        [ examineOnlyObject
+            "ladder"
+            "The ladder is made up of strong steel \'U\'s set in the smooth stone tunnel wall."
+
+        , examineOnlyObject
+            "door"
+            (  "The door is a round affair, more like a hatch than anything. There is a warning written above "
+            ++ "the steering wheel-shaped handle."
+            )
+
+        , object
+            "warning"
+            [OnStrict "door", VerbPhrase "written, funnily enough, by hand,"]
+            "a warning sign"
+            (M.fromList
+                [ (Examine, "The warning reads: \n  U. S. T.\nFuel Storage\n NO SMOKING")
+                ]
+            )
+
+        , object
+            "handle"
+            [OnLoose "the door", VerbPhrase "lies centered"]
+            "a metal circular handle"
+            (M.fromList
+                [   ( Examine
+                    ,  "Not only is it shaped like a steering wheel, it appears to be a literal "
+                        ++ "steering wheel, repurposed as one of those submarine hatch screwy handles."
+                    )
+                ]
+            )
+        ]
+    )
+    "tjoint"
+    (M.fromList
+        [ (U, incave)
+        , (D, teleporterBay)
+        ]
+    )
+
+teleporterBay :: Tree Direction Location
+teleporterBay = node 
+    (location 
+        ("You find yourself in a large steel-walled room. A metal ladder leads up through a hole in the ceiling. "
+            ++ "The only light comes from a glowing blue circle set in the opposite wall."
+        )
+        [ examineOnlyObject 
+            "circle" 
+            ("The circle is very blue and glowey ring, about 6ft in diameter. There is a large, round button set in "
+                ++ "the wall in the center."
+            )
+        
+        , object 
+            "button"
+            [InStrict "circle", VerbPhrase "is set"]
+            "a circular, shiny button"
+            (M.fromList
+                [ (Examine, "The button is the size of your hand, and bears this sigil: \"->\".")]
+            )
+        ]
+    ) 
+    "teleporterBay"
+    (M.fromList 
+        [ (U, tjoint)
+        ]
+    )
 
 emptiness :: Tree Direction Location
 emptiness = node (location

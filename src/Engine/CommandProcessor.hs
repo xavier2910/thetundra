@@ -93,6 +93,8 @@ directionLonghandMap = M.fromList
     , ("northeast", NE)
     , ("southwest", SW)
     , ("southeast", SE)
+    , ("down", D)
+    , ("up", U)
     ]
 
 readM :: (Read r) => String -> Maybe r
@@ -116,6 +118,7 @@ stringToCommand :: String -> Maybe Command
 stringToCommand s = do
 
     guard $ (not . null) cmdAndArgs
+    guard $ (not . null) cmd
 
     parsed
         <|> parsedShorthand
@@ -128,7 +131,7 @@ stringToCommand s = do
 
     -- n. b. we must capitalize the first letter for reads' sake
     parsed = do
-        cmdType <- readM (toUpper (head cmd) : tail cmd)
+        cmdType <- readM (toUpper (head cmd) : tail cmd) 
         return $ Command cmdType args
 
     parsedShorthand = do
@@ -169,12 +172,14 @@ executeCommand (Command Go args) = do
                     tzGoto $ getid dest
                     return $ (description . value) dest
                 Nothing ->
-                    return $ head args ++ " is not a direction you can go :("
+                    return $ head args ++ " is not a direction you can go :(" 
 
         else return "In what direction?"
   where
     destinationFrom place = do
         dir <- parseDirection $ head args
+        chs <- children place
+        guard $ dir `elem` M.keys chs -- (move does not fail on bad direction)
         return $ move dir place
 
 
