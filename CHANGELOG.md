@@ -13,6 +13,9 @@ and this project adheres to the
 
 - added rooms
 - added up and down as directions
+- added enter and exit aliases
+- added push cmd
+- configured Object to allow specification of action to do for an object command, rather than just a string to return
 
 ### Fixes
 
