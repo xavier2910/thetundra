@@ -17,7 +17,7 @@ jobs:
       - name: Setup stack
         uses: haskell/actions/setup@v2
         with:
-          ghc-version: '9.2.4' # Exact version of ghc to use
+          ghc-version: '9.2.8' # Exact version of ghc to use
           # cabal-version: 'latest'. Omitted, but defaults to 'latest'
           enable-stack: true
           stack-version: 'latest'
@@ -35,7 +35,7 @@ jobs:
       - name: Setup stack
         uses: haskell/actions/setup@v2
         with:
-          ghc-version: '9.2.4' # Exact version of ghc to use
+          ghc-version: '9.2.8' # Exact version of ghc to use
           enable-stack: true
           stack-version: 'latest'
           
