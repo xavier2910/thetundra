@@ -1,5 +1,5 @@
-module Engine.CommandProcessor
-    (CommandType
-    ) where
+module Engine.CommandProcessor (
+    CommandType,
+) where
 
 data CommandType
