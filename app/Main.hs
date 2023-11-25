@@ -1,6 +1,6 @@
 module Main (main) where
 
-import Player
+import Player (begin)
 
 main :: IO ()
 main = begin
