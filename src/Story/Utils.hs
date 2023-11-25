@@ -4,7 +4,7 @@ module Story.Utils (
 ) where
 
 import Control.Monad.State (State)
-import Data.Map qualified as M
+import qualified Data.Map as M
 import Engine (GameState, Object, object)
 import Engine.CommandProcessor (CommandType (Examine))
 

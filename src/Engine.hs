@@ -28,7 +28,7 @@ import Control.Monad.State (State)
 import Data.Char (
     toUpper,
  )
-import Data.Map qualified as M
+import qualified Data.Map as M
 import {-# SOURCE #-} Engine.CommandProcessor (
     CommandType,
  )
@@ -254,6 +254,7 @@ instance HasDescription Object where
     description o =
         -- take a noun phrase provided...
         oDescription o
+            -- and complete the sentence based on the relations
             -- and complete the sentence based on the relations
             -- present (if any)
             ++ if not . any isLooseOrStrictOnOrIn $ relations o

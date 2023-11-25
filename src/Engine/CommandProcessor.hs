@@ -22,7 +22,7 @@ import Data.Char (
     toLower,
     toUpper,
  )
-import Data.Map qualified as M
+import qualified Data.Map as M
 import Data.Maybe (fromMaybe)
 import Engine (
     Direction (..),

@@ -2,7 +2,7 @@ module Story.PCd1 (
     hangarB,
 ) where
 
-import Data.Map qualified as M
+import qualified Data.Map as M
 import Engine (Direction, Location, Tree (..), location)
 
 hangarB :: Tree Direction Location

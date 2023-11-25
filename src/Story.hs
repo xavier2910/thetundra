@@ -6,7 +6,7 @@ import Control.Monad.State (
     MonadState (put),
     gets,
  )
-import Data.Map qualified as M
+import qualified Data.Map as M
 import Engine (
     Direction (..),
     HasDescription (description),
