@@ -2,8 +2,8 @@
 
 A silly text adventure game in the series of [The Cave and The Forest](https://github.com/xavier2910/thecaveANDtheforest). However,
 this one has a command processor instead of a list of options. Which is a trade off, and ratehr more difficult than first expected. Also,
-I don't like how I made the world an infinitely deep data structure: once you can change the world (think `take` or `put` commands), it'll 
-get rather inefficient.
+I don't like how I made the world an infinitely deep data structure: once you can change the world (think `take` or `put` commands), it'll
+get rather inefficient. It's actually so bad I've decided to cease work on it entirely and [start from scratch in another language](github.com/xaiver2910/tundra).
 
 ## Get Started
 

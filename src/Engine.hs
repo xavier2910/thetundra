@@ -1,3 +1,4 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 module Engine (
     Direction (..),
     Tree (Leaf, Node, Jump),
@@ -13,7 +14,6 @@ module Engine (
     location,
     Object,
     object,
-    commandOnlyObject,
     name,
     commands,
     Relation (..),
@@ -22,16 +22,17 @@ module Engine (
     wrapIntoLines,
 ) where
 
--- again, this warning is (alas) wrong
-
-import Control.Monad.State (State)
+import Control.Monad.State (
+    State,
+ )
 import Data.Char (
     toUpper,
  )
-import qualified Data.Map as M
+import Data.Map qualified as M
 import {-# SOURCE #-} Engine.CommandProcessor (
     CommandType,
  )
+import Data.Bifunctor (Bifunctor(second))
 
 data Direction
     = N
@@ -145,13 +146,6 @@ emptyLocation desc = location desc []
 
 location :: String -> [Object] -> Location
 location = Location
-
-{- | useful to allow examination etc.
- of static scenery that should not
- be dynamically described.
--}
-commandOnlyObject :: String -> M.Map CommandType (State GameState String) -> Object
-commandOnlyObject s = Object s [] ""
 
 -- | usage: `object name relations oDescription commands`
 object :: String -> [Relation] -> String -> M.Map CommandType (State GameState String) -> Object
@@ -274,3 +268,14 @@ instance HasDescription Object where
                         -- the on's or in's, space them out, and stitch them
                         -- together
                         ++ concatMap ((' ' :) . relationToString) (filter isLooseOrStrictOnOrIn $ relations o)
+
+instance (Ord k) => Functor (Tree k) where
+    fmap f (Leaf x) = Leaf $ f x
+    fmap f (Jump x nxt) = Jump (f x) (fmap f nxt)
+    fmap f (Node x childMap) = Node (f x) (M.fromList $ map (second (fmap f)) $ M.toList childMap)
+
+instance Eq Location where
+    oneLoc == otherLoc = description oneLoc == description otherLoc
+
+instance (Eq v) => Eq (Tree k v) where
+    oneTree == another = value oneTree == value another

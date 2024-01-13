@@ -49,12 +49,18 @@ data CommandType
     | Wait
     | Again
     | Help
+    | Steal
+    | Open
+    | Turn
     deriving (Eq, Ord, Bounded, Enum, Show, Read)
 
 objectCommands :: [CommandType]
 objectCommands =
     [ Examine
     , Push
+    , Steal
+    , Open
+    , Turn
     ]
 
 moveCommands :: [CommandType]
@@ -110,6 +116,7 @@ particles :: [String]
 particles =
     [ "the"
     , "a"
+    , "an"
     , "of"
     ]
 

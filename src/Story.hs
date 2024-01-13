@@ -1,30 +1,37 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 module Story (
     start,
 ) where
 
 import Control.Monad.State (
     MonadState (put),
+    State,
     gets,
  )
-import qualified Data.Map as M
+import Data.Map qualified as M
+import Data.Maybe (fromMaybe)
 import Engine (
     Direction (..),
+    GameState,
     HasDescription (description),
     Location,
     Relation (InLoose, InStrict, OnLoose, OnStrict, VerbPhrase),
-    Tree (Jump, Node),
+    Tree (..),
+    children,
     emptyLocation,
     location,
     object,
     value,
  )
 import Engine.CommandProcessor (
-    CommandType (Push),
+    CommandType (Open, Push, Steal, Turn),
  )
 import Story.PCd1 (
     hangarB,
  )
 import Story.Utils (
+    commandOnlyObject,
+    commandsShow,
     examineOnlyObject,
     examineShows,
  )
@@ -114,10 +121,14 @@ tjoint =
             [ examineOnlyObject
                 "ladder"
                 "The ladder is made up of strong steel \'U\'s set in the smooth stone tunnel wall."
-            , examineOnlyObject
+            , commandOnlyObject
                 "door"
-                ( "The door is a round affair, more like a hatch than anything. There is a warning written above "
-                    ++ "the steering wheel-shaped handle."
+                ( M.fromList
+                    [ examineShows $
+                        "The door is a round affair, more like a hatch than anything. There is a warning written above "
+                            ++ "the steering wheel-shaped handle."
+                    , (Open, openDoor)
+                    ]
                 )
             , object
                 "warning"
@@ -135,6 +146,7 @@ tjoint =
                     [ examineShows $
                         "Not only is it shaped like a steering wheel, it appears to be a literal "
                             ++ "steering wheel, repurposed as one of those submarine hatch screwy handles."
+                    , (Turn, openDoor)
                     ]
                 )
             ]
@@ -142,6 +154,41 @@ tjoint =
         ( M.fromList
             [ (U, incave)
             , (D, teleporterBay)
+            ]
+        )
+  where
+    openDoor :: State GameState String
+    openDoor = do
+        put modifiedTjoint
+        return "The wheel turns smoothly, as if it had been recently oiled. The door opens into a dark room."
+
+modifiedTjoint :: Tree Direction Location
+modifiedTjoint = 
+    Node 
+        (value tjoint)
+        (M.insert IN fuelStorage . M.insert N fuelStorage
+            $ fromMaybe M.empty (children tjoint)
+        )
+
+
+fuelStorage :: Tree Direction Location
+fuelStorage =
+    Node
+        ( location
+            "Large round tanks fill this otherwise bare room. A circular hatch leads out to the south."
+            [ object
+                "tanks"
+                []
+                ""
+                ( M.fromList $
+                    examineShows "The tanks are made of smooth metal and marked with various scary warnings in bold type. They look quite heavy."
+                        : commandsShow [Open, Push, Steal, Turn] "That sounds like a bad idea."
+                )
+            ]
+        )
+        ( M.fromList
+            [ (OUT, modifiedTjoint)
+            , (S, modifiedTjoint)
             ]
         )
 
